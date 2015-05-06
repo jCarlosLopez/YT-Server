@@ -10,7 +10,8 @@
   ],
   "dependencies": {
     "express": "~4.0.0",
-    "jade": "~1.9.2"
+    "jade": "~1.9.2",
+    "mongoose": "~4.0.2"
   },
   "engines": {
     "node": ">=0.10.0"
