@@ -1,17 +1,19 @@
 {
-"name": "yt-server",
+  "name": "yt-server",
   "version": "0.0.1",
   "description": "NodeJS Youtube server to queue videos to upload, and send them to YT in non-working hours",
   "author": "Jose Luis Jimenez Urbano <ijos@ijos.es>",
-   "contributors": [{
+  "contributors": [
+    {
       "name": "Javier Martinez <>"
-    }],
-    "dependencies": {
-      "express": "~4.0.0",
-      "jade": "*"
-    },
-    "engines": {
-        "node": ">=0.10.0"
-    },
-    "license": "MIT"
+    }
+  ],
+  "dependencies": {
+    "express": "~4.0.0",
+    "jade": "~1.9.2"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "license": "MIT"
 }
