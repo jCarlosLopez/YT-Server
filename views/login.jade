@@ -1,0 +1,18 @@
+doctype html
+html
+  include ./includes/header.jade
+  body
+  
+    block test
+      div.container
+        div.content
+        
+          form(action="/upload", method="post", enctype="multipart/form-data").form-signin
+            h4.form-signin-heading Por favor, inicia sesión
+            input(type="email", name="email", id="email", placeholder="Introduce tu email", required, autofocus).form-control
+            
+            input(type="password", name="pass", required).form-control
+            
+            button(type="submit").btn.btn-lg.btn-primary.btn-block Iniciar Sesión
+      
+    div.footer

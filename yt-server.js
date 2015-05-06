@@ -6,18 +6,42 @@ var path = require('path');
 //used for file path
 var fs = require('fs-extra');
 //File System - for file manipulation
-
+var cookieParser = require('cookie-parser')
+// Cookies
 
 var app = express();
 app.use(busboy());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use("/public", express.static(path.join(__dirname, 'public')));
+app.use(cookieParser());
 app.set('view engine', 'jade');
 
+
+// Print pretty html on development environment
+if (app.get('env') === 'development') {
+  app.locals.pretty = true;
+}
 
 
 // INDEX GET ROUTE
 app.get('/', function(req, res) {
-  res.render('index');
+  
+  console.log(req.session.user);
+
+  if (req.cookies == null) {
+    // if user is not logged-in redirect back to login page //
+    console.log("not logged in");
+    res.redirect('/login');
+  } else {
+    console.log("logged in");
+    res.render('index');
+  }
+
+});
+
+app.get('/login', function(req, res) {
+  
+  res.render('login');
 });
 
 // UPLOAD GET ROUTE

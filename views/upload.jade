@@ -1,8 +1,19 @@
 doctype html
-html(lang="en")
-  head
-    title= "Upload File"
+html
+  include ./includes/header.jade
   body
-    form(action="/upload", method="post", enctype="multipart/form-data")
-      input(type="file", name="file")
-      input(type="submit")
+  
+    block test
+      div.container
+        div.content
+        
+          form(action="/upload", method="post", enctype="multipart/form-data")
+            div.form-group
+              input(type="file", name="file")
+            
+            div.form-group  
+              input(type="submit" name="submit").btn.btn-default
+      
+      
+      
+    div.footer
