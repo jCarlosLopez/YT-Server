@@ -9,9 +9,9 @@ html
         
           form(action="/upload", method="post", enctype="multipart/form-data").form-signin
             h4.form-signin-heading Por favor, inicia sesión
-            input(type="email", name="email", id="email", placeholder="Introduce tu email", required, autofocus).form-control
+            input(type="text", name="user", id="user", placeholder="Introduce tu usuario", required, autofocus).form-control
             
-            input(type="password", name="pass", required).form-control
+            input(type="password", name="pass", placeholder="Introduce la contraseña", required).form-control
             
             button(type="submit").btn.btn-lg.btn-primary.btn-block Iniciar Sesión
       
