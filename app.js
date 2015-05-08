@@ -40,13 +40,13 @@ if ('development' == env) {
   }));
   app.use(bodyParser.json());
   app.use(methodOverride());
-  
+
   app.use(session({
     secret: "J8eZXZmp4a",
     resave: true,
     saveUninitialized: true
   }));
-  
+
   app.use(passport.initialize());
   app.use(passport.session());
 
@@ -75,37 +75,28 @@ passport.use('local-login', new LocalStrategy({
     passReqToCallback : true // allows us to pass back the entire request to the callback
 },
 function(req, username, password, done) {
-    
+
     User.findOne({ 'user' :  username }, function(err, obj) {
-      
+
         // if there are any errors, return the error before anything else
         if (err)
             return done(err);
 
         // if no user is found, return the message
         if (!obj){
-          return done(null, false, req.flash('loginMessage', 'No user found.')); // req.flash is the way to set flashdata using connect-flash
           console.log("No user found");
+          return done(null, false, req.flash('loginMessage', 'No user found.')); // req.flash is the way to set flashdata using connect-flash
         }
-        
+
         if(obj.pass == password){
-          // all is well, return successful user
-          req.session.loggedIn = true;
           return done(null, obj);
         }else{
           return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.')); // create the loginMessage and save it to session as flashdata
         }
-        
+
     });
 
 }));
-
-
-
-
-
-
-
 
 
 /* (De)Serialization Functions */
@@ -128,4 +119,4 @@ require('./routes')(app);
 
 var server = app.listen(3030, function() {
   console.log('Listening on port %d', server.address().port);
-}); 
+});
