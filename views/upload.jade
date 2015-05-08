@@ -1,19 +1,37 @@
 doctype html
 html
   include ./includes/header.jade
-  body
-  
+  script.
+    jQuery(document).ready(function(){
+    
+    });
+  body(style="padding:0px;")
+    include ./includes/navbar.jade
     block test
       div.container
         div.content
-        
-          form(action="/upload", method="post", enctype="multipart/form-data")
-            div.form-group
-              input(type="file", name="file")
-            
-            div.form-group  
-              input(type="submit" name="submit").btn.btn-default
-      
-      
-      
-    div.footer
+          div.row
+            div.col-md-6.col-md-offset-3
+              form(action="/upload", method="post", enctype="multipart/form-data")
+                div.form-group
+                  label(for="title") Título
+                  input(type="text", id="title", placeholder="Introduce el título del vídeo", name="title", autocomplete="off").form-control
+                div.form-group
+                  label(for="privacy") Privacidad
+                  input(type="text", id="privacy", value="Privado", name="privacy", readonly).form-control
+                div.form-group
+                  label(for="tags") Etiquetas
+                  input(type="text", id="tags", name="tags", data-role="tagsinput").form-control
+                div.form-group
+                  label(for="description") Descripción
+                  textarea(type="text", id="description", name="description", placeholder="Introduce la descripción del vídeo", rows="6").form-control
+                div.form-group
+                  label(for="channel") Canal
+                  select(id="channel", name="channel").form-control
+                    option(value="dorsia") Dorsia
+                    option(value="eva") EVA
+                div.form-group
+                  label(for="file") Vídeo
+                  input(type="file", name="file")
+                div.form-group  
+                  input(type="submit", name="submit").btn.btn-primary.btn-block

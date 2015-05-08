@@ -1,11 +1,11 @@
-var mongoose = require('mongoose'),
-    Schema = mongoose.Schema;
+var mongoose = require('mongoose');
 
 
-var userSchema = new Schema({
-    email : String,
-    pass : String
-}, { collection: 'User' });
+var userSchema = mongoose.Schema({
+  user  : String,
+  pass  : String
+});
 
 
-module.exports = mongoose.model('User', userSchema, 'User');
+//-> EXPORT
+module.exports = mongoose.model('User', userSchema);

@@ -1,6 +1,8 @@
 
 var passport = require('passport')
-  , User = require('./models/user') 
+  , Video = require('./models/video')
+  , bodyParser = require('body-parser')
+  , fs = require('fs-extra')
 
 module.exports = function (app){
   
@@ -8,35 +10,41 @@ module.exports = function (app){
   
   // INDEX GET ROUTE
   app.get('/', function(req, res) {
-    
-    /*
-    if (req.cookies == null) {
+    if (req.session.loggedIn == null) {
       // if user is not logged-in redirect back to login page //
-      console.log("not logged in");
       res.redirect('/login');
     } else {
-      console.log("logged in");
-      res.render('index');
+      //res.render('index');
+      res.redirect('/upload');
     }
-    */
   });
   
   app.get('/login', function(req, res) {
-    
     res.render('login');
   });
   
-  app.post('/login',
-    passport.authenticate('local'),
-    function(req, res) {
-      // If this function gets called, authentication was successful.
-      // `req.user` contains the authenticated user.
-      res.redirect('/upload/' + req.user.username);
-    });
+  /* Handle Login POST */
+  app.post('/login', passport.authenticate('local-login', {
+    successRedirect: '/upload',
+    failureRedirect: '/login',
+    failureFlash : true // allow flash messages
+  }));
+  
+  // Logout
+  app.get('/logout', function(req, res){
+    req.logout();
+    res.redirect('/login');
+  });
   
   // UPLOAD GET ROUTE
   app.get('/upload', function(req, res) {
-    res.render('upload');
+    if (req.session.loggedIn == true) {
+      // if user is not logged-in redirect back to login page //
+      res.render('upload');
+    } else {
+      //res.render('index');
+      res.redirect('/login');
+    }
   });
   
   /* ==========================================================
@@ -45,27 +53,72 @@ module.exports = function (app){
    Express v4  Route definition
    ============================================================ */
   app.route('/upload').post(function(req, res, next) {
-  
+    
     var fstream;
     req.pipe(req.busboy);
+    
+    req.busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated) {
+      req.body[fieldname] = val;
+    });
+    
+    
     req.busboy.on('file', function(fieldname, file, filename) {
-      console.log("Uploading: " + filename);
-  
+      req.body['filename'] = filename;
       //Path where image will be uploaded
       fstream = fs.createWriteStream(__dirname + '/uploads/' + filename);
       file.pipe(fstream);
       fstream.on('close', function() {
-        console.log("Upload Finished of " + filename);
-        res.redirect('/upload/success');
-        //where to go next
+        
       });
+      
     });
     
+    
+    req.busboy.on('finish', function() {
+      var video = new Video({
+        title : req.body['title'],
+        description : req.body['description'],
+        tags : req.body['tags'],
+        privacy : req.body['privacy'],
+        channel : req.body['channel'],
+        resource_name : req.body['filename'],
+        uploaded : false
+      });
+      
+      video.save(function (err, data) {
+        if (err){
+          console.log(err);
+        }else{ 
+          console.log('Saved : ', data );
+          res.redirect('/queue');
+        }
+      });
+      
+    });
+    
+    
+    
+    
+ 
+    
   });
-  
-  // UPLOAD SUCCESS GET ROUTE
-  app.get('/upload/success', function(req, res) {
-    res.render('upload_success');
+
+  app.get('/queue', function(req, res) {
+    if (req.session.loggedIn == true) {
+      
+      Video.find({}, function(err, videos) {
+        var videoMap = {};
+    
+        videos.forEach(function(user) {
+          videoMap[user._id] = user;
+        });
+        console.log(videoMap);
+        //res.send(videoMap);  
+        res.render('queue', {videos: videoMap});
+      });
+    } else {
+      res.redirect('/login');
+    }
   });
   
   

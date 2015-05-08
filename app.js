@@ -1,7 +1,6 @@
 //Express Web Server
 var express = require('express')
   , routes = require('./routes')
-  , user = require('./routes/user')
   , bodyParser = require('body-parser')
   , methodOverride = require('method-override')
   , busboy = require('connect-busboy')                      // Middleware for form/file upload
@@ -15,16 +14,17 @@ var express = require('express')
   , logger = require('morgan')                              // Morgan Logger
   , path = require('path')                                  // Path
   , session = require('express-session')
+  , flash = require('connect-flash')
+  , User = require('./models/user')
   , LocalStrategy = require('passport-local').Strategy;
   //, TwitterStrategy = require('passport-twitter').Strategy;
 
 
-  // DB Config
-  var dbConfig = require('./db.js');
+// DB Config
+var dbConfig = require('./db.js');
 
 
-
-var app = express();
+var app = module.exports = express();
 
 var env = process.env.NODE_ENV || 'development';
 if ('development' == env) {
@@ -32,6 +32,7 @@ if ('development' == env) {
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   app.use(busboy());
+  app.use(flash());
   app.use(logger('dev'));
   app.use(cookieParser());
   app.use(bodyParser.urlencoded({
@@ -53,62 +54,51 @@ if ('development' == env) {
   app.use("/public", express.static(path.join(__dirname, 'public')));
   app.locals.pretty = true; // Print pretty html on development environment
 }
+
 // DB Connect
-mongoose.connect(dbConfig.url);
-
-
+//-> CONFIGURATION
+mongoose.connect(dbConfig.url, function(err) {
+  if (err) {
+    console.log("Could not connect to database");
+    throw err;
+  }else{
+    //console.log("Succesfully connected to MongoDB");
+  }
+});
 
 
 // passport/login.js
-passport.use('login', new LocalStrategy({
-    passReqToCallback : true
-  },
-  function(req, username, password, done) { 
-    // check in mongo if a user with username exists or not
-    User.findOne({ 'user' :  username }, 
-      function(err, user) {
-        // In case of any error, return using the done method
+passport.use('local-login', new LocalStrategy({
+    // by default, local strategy uses username and password, we will override with email
+    usernameField : 'user',
+    passwordField : 'pass',
+    passReqToCallback : true // allows us to pass back the entire request to the callback
+},
+function(req, username, password, done) {
+    
+    User.findOne({ 'user' :  username }, function(err, obj) {
+      
+        // if there are any errors, return the error before anything else
         if (err)
-          return done(err);
-        // Username does not exist, log error & redirect back
-        if (!user){
-          console.log('User Not Found with username '+username);
-          return done(null, false, 
-                req.flash('message', 'User Not found.'));                 
-        }
-        // User exists but wrong password, log the error 
-        if (!isValidPassword(user, password)){
-          console.log('Invalid Password');
-          return done(null, false, 
-              req.flash('message', 'Invalid Password'));
-        }
-        // User and password both match, return user from 
-        // done method which will be treated like success
-        return done(null, user);
-      }
-    );
-}));
+            return done(err);
 
-passport.use(new LocalStrategy(
-  function(username, password, done) {
-    User.findOne({ handle: username, pass: password }, function (err, user) {
-      if (err) { return done(err); }
-      if (!user) {
-        return done(null, false, { message: 'Incorrect username.' });
-      }
-      return done(null, user.userId);
+        // if no user is found, return the message
+        if (!obj){
+          return done(null, false, req.flash('loginMessage', 'No user found.')); // req.flash is the way to set flashdata using connect-flash
+          console.log("No user found");
+        }
+        
+        if(obj.pass == password){
+          // all is well, return successful user
+          req.session.loggedIn = true;
+          return done(null, obj);
+        }else{
+          return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.')); // create the loginMessage and save it to session as flashdata
+        }
+        
     });
-  }
-));
 
-
-
-
-
-
-
-
-
+}));
 
 
 
@@ -119,14 +109,16 @@ passport.use(new LocalStrategy(
 
 
 /* (De)Serialization Functions */
+// used to serialize the user for the session
 passport.serializeUser(function(user, done) {
-  done(null, user._id);
+    done(null, user.id);
 });
- 
+
+// used to deserialize the user
 passport.deserializeUser(function(id, done) {
-  User.findById(id, function(err, user) {
-    done(err, user);
-  });
+    User.findById(id, function(err, user) {
+        done(err, user);
+    });
 });
 
 

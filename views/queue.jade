@@ -1,0 +1,17 @@
+doctype html
+html
+  include ./includes/header.jade
+  script.
+    jQuery(document).ready(function(){
+    
+    });
+  body(style="padding:0px;")
+    include ./includes/navbar.jade
+    block test
+      div.container
+        div.content
+          div.row
+            div.col-md-6.col-md-offset-3
+              //!{videos}
+              each video in videos
+                p #{video.title}
